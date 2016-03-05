@@ -6,10 +6,11 @@ output: html_document
 ---
 
 ```{r, echo=FALSE, message=FALSE, warning=FALSE}
-
 library(ncdf4)
 library(xlsx)
 library(reshape)
+library(dplyr)
+library(ggplot2)
 fname <- 'new_phi_data.nc'
 ncin <- nc_open(fname)
 
@@ -73,12 +74,11 @@ colnames(phi_year_35) = c('year', 'ave_phi_35')
 
 phi_year_70 = data.frame((1948 + 0:(length(year_ave)-2)),ave_70_ls[-length(ave_70_ls)]) 
 colnames(phi_year_70) = c('year', 'ave_phi_70')
+
 ```
 
 ```{r, echo=FALSE, message=FALSE, warning=FALSE}
-library(dplyr)
 flood <- read.csv("GlobalFloodsRecord.csv", header = T)
-
 nameuse <- c("Country", "Detailed.Locations..click.on.active.links.to.access.inundation.extents.", "Began", "Ended", "Duration.in.Days", "Dead", "Displaced", "Main.cause", "Severity..", "Affected.sq.km", "Magnitude..M...", "Centroid.X", "Centroid.Y", "M.6", "M.4")
 floodinfo <- flood[ , nameuse]
 colnames(floodinfo) <- c("Country", "Detailed.Locations", "Began", "Ended", "Duration", "Dead", "Displaced", "Cause", "Severity", "Affected.sq.km", "Magnitude", "Longitude", "Latitude", "Extreme", "Large")
@@ -93,43 +93,81 @@ floodinfo$Ended <- as.Date(as.character(floodinfo$Ended), "%d-%B-%y")
 floodinfo_N35_N70 <- filter(floodinfo, Latitude <= 70 & Latitude >= 35)
 floodinfo_N10_N35 <- filter(floodinfo, Latitude < 35 & Latitude >= 10)
 
-periodicity_plot <- function (floodinfo) {
-        annual_num_extreme_flood <- floodinfo %>%
-                mutate(Began_yr=as.numeric(format(as.POSIXct(floodinfo$Began,format="%Y-%m-%d %I:%M:%S %p"),"%Y"))) %>% 
-                group_by(Began_yr, Extreme) %>% 
-                summarise(n()) %>% filter(Extreme == 1)
+############################################# World
+annual_num_extreme_flood_yr <- floodinfo %>%
+        mutate(Began_yr=as.numeric(format(as.POSIXct(floodinfo$Began,format="%Y-%m-%d %I:%M:%S %p"),"%Y"))) %>% 
+        group_by(Began_yr, Extreme) %>% 
+        summarise(n()) %>% filter(Extreme == 1)
         
-        annual_num_large_flood <- floodinfo %>%
-                mutate(Began_yr=as.numeric(format(as.POSIXct(floodinfo$Began,format="%Y-%m-%d %I:%M:%S %p"),"%Y"))) %>% 
-                group_by(Began_yr, Large) %>% 
-                summarise(n()) %>% filter(Large == 1)
-        annual_num_large_flood <- annual_num_large_flood[-1, ]
+annual_num_large_flood_yr <- floodinfo %>%
+        mutate(Began_yr=as.numeric(format(as.POSIXct(floodinfo$Began,format="%Y-%m-%d %I:%M:%S %p"),"%Y"))) %>% 
+        group_by(Began_yr, Large) %>% 
+        summarise(n()) %>% filter(Large == 1)
+annual_num_large_flood_yr <- annual_num_large_flood_yr[-1, ]
+
+bind = data.frame(annual_num_large_flood_yr$Began_yr, annual_num_large_flood_yr$`n()`)
+colnames(bind) = c('year','large')
+ggplot(phi_year, aes(x = year, y = ave_phi))+ geom_point(size = 3, alpha = 0.5, color = '#66b3ff')+geom_smooth(se = F,size = 0.75, color = '#3399ff', linetype = 'dashed') +theme_bw()+ ggtitle('Average Phi by Years') + ylab('Average Phi') 
+
+ggplot(data = bind, aes(x = year, y = large))+geom_line(size = 3, alpha = 0.5, color = '#66b3ff')+theme_bw()+ ggtitle('M4') + ylab('# of floods') 
+
+bind2 = data.frame(annual_num_extreme_flood_yr$Began_yr, annual_num_extreme_flood_yr$`n()`)
+colnames(bind2) = c('year','extreme')
+ggplot(data = bind2, aes(x = year, y = extreme))+geom_line(size = 3, alpha = 0.5, color = '#ff6600')+theme_bw()+ ggtitle('M6') + ylab('# of floods')
         
-##########################################################################
-        plot(annual_num_large_flood$Began_yr, annual_num_large_flood$`n()`, "l", xlab = "Year", ylab = "Number", las = 3)
-        title("Total Annual Large Floods (M>4) ")
-        plot(annual_num_extreme_flood$Began_yr, annual_num_extreme_flood$`n()`, "l", xlab = "Year", ylab = "Number", las = 3)
-        title("Total Annual Extreme Floods (M>6)")
+################################################### N35-N70
+annual_num_extreme_flood_70 <- floodinfo_N35_N70 %>%
+        mutate(Began_yr=as.numeric(format(as.POSIXct(floodinfo_N35_N70$Began,format="%Y-%m-%d %I:%M:%S %p"),"%Y"))) %>% 
+        group_by(Began_yr, Extreme) %>% 
+        summarise(n()) %>% filter(Extreme == 1)
+        
+annual_num_large_flood_70 <- floodinfo_N35_N70 %>%
+        mutate(Began_yr=as.numeric(format(as.POSIXct(floodinfo_N35_N70$Began,format="%Y-%m-%d %I:%M:%S %p"),"%Y"))) %>% 
+        group_by(Began_yr, Large) %>% 
+        summarise(n()) %>% filter(Large == 1)
+annual_num_large_flood_yr <- annual_num_large_flood_70[-1, ]
+
+bind = data.frame(annual_num_large_flood_70$Began_yr, annual_num_large_flood_70$`n()`)
+colnames(bind) = c('year','large')
+ggplot(phi_year_70, aes(x = year, y = ave_phi_70))+ geom_point(size = 3, alpha = 0.5, color = '#66b3ff')+geom_smooth(se = F,size = 0.75, color = '#3399ff', linetype = 'dashed') +theme_bw()+ ggtitle('Average Phi by Years_N35-N70') + ylab('Average Phi') 
+
+ggplot(data = bind, aes(x = year, y = large))+geom_line(size = 3, alpha = 0.5, color = '#66b3ff')+theme_bw()+ ggtitle('M4') + ylab('# of floods') 
+
+bind2 = data.frame(annual_num_extreme_flood_70$Began_yr, annual_num_extreme_flood_70$`n()`)
+colnames(bind2) = c('year','extreme')
+ggplot(data = bind2, aes(x = year, y = extreme))+geom_line(size = 3, alpha = 0.5, color = '#ff6600')+theme_bw()+ ggtitle('M6') + ylab('# of floods')
+
+
+################################################## N10-N35
+annual_num_extreme_flood_35 <- floodinfo_N10_N35 %>%
+        mutate(Began_yr=as.numeric(format(as.POSIXct(floodinfo_N10_N35$Began,format="%Y-%m-%d %I:%M:%S %p"),"%Y"))) %>% 
+        group_by(Began_yr, Extreme) %>% 
+        summarise(n()) %>% filter(Extreme == 1)
+        
+annual_num_large_flood_35 <- floodinfo_N10_N35 %>%
+        mutate(Began_yr=as.numeric(format(as.POSIXct(floodinfo_N10_N35$Began,format="%Y-%m-%d %I:%M:%S %p"),"%Y"))) %>% 
+        group_by(Began_yr, Large) %>% 
+        summarise(n()) %>% filter(Large == 1)
+annual_num_large_flood_35 <- annual_num_large_flood_35[-1, ]
+
+bind = data.frame(annual_num_large_flood_35$Began_yr, annual_num_large_flood_35$`n()`)
+colnames(bind) = c('year','large')
+ggplot(phi_year_35, aes(x = year, y = ave_phi_35))+ geom_point(size = 3, alpha = 0.5, color = '#66b3ff')+geom_smooth(se = F,size = 0.75, color = '#3399ff', linetype = 'dashed') +theme_bw()+ ggtitle('Average Phi by Years_N10-N35') + ylab('Average Phi') 
+
+ggplot(data = bind, aes(x = year, y = large))+geom_line(size = 3, alpha = 0.5, color = '#66b3ff')+theme_bw()+ ggtitle('M4') + ylab('# of floods') 
+
+bind2 = data.frame(annual_num_extreme_flood_35$Began_yr, annual_num_extreme_flood_35$`n()`)
+colnames(bind2) = c('year','extreme')
+ggplot(data = bind2, aes(x = year, y = extreme))+geom_line(size = 3, alpha = 0.5, color = '#ff6600')+theme_bw()+ ggtitle('M6') + ylab('# of floods')
+
+
+###################################################       
+        
+        #plot(phi_year_plot, annual_num_extreme_flood$`n()`, xlab = "Pressure by year: 1985-2015", ylab = "Total Number of Annual Extreme Floods", main = "The Relation Between Pressure and Number of Annual Extreme Floods")
+       # abline(lm(annual_num_extreme_flood$`n()` ~ phi_year_plot))
+       # plot(phi_year_plot, annual_num_large_flood$`n()`, xlab = "Pressure by year: 1985-2015", ylab = "Total Number of Annual Large Floods", main = "The Relation Between Pressure and Number of Annual Large Floods")
+       # abline(lm(annual_num_large_flood$`n()` ~ phi_year_plot))
 ###########################################################################
-}
-```
-
-Total annual floods worldwide.
-
-```{r}
-periodicity_plot(floodinfo)
-```
-
-Total annual floods in N35 - N70.
-
-```{r}
-periodicity_plot(floodinfo_N35_N70)
-```
-
-Total annual floods in N10 - N35.
-
-```{r}
-periodicity_plot(floodinfo_N10_N35)
 ```
 
 We can see that total annual floods have an apparent periodicity. Large floods and extreme floods share a similar trend. What should be concerned is that we are in a dangerous time period now, because in 2015, large floods seem to touch the bottom of its periodicity. Maybe there would be more floods in 2016. 
@@ -152,51 +190,37 @@ plot(FloodMap)
 Compare with the dynamic map which is created in shiny app, https://yusenwang.shinyapps.io/Dynamic_Flood_Map/
 We can see that .......
 
-```{r}
-
-phi_all = data.frame(phi_year$year,phi_year$ave_phi,phi_year_35$ave_phi_35, phi_year_70$ave_phi_70)
-
-
-
-
-plot(phi_all$phi_year.ave_phi, annual_num_extreme_flood$`n()`, xlab = "Pressure by year: 1985-2015", ylab = "Total Number of Annual Extreme Floods", main = "The Relation Between Pressure and Number of Annual Extreme Floods")
-abline(lm(annual_num_extreme_flood$`n()` ~ pre_yr))
-
-plot(pre_yr, annual_num_large_flood$`n()`, xlab = "Pressure by year: 1985-2015", ylab = "Total Number of Annual Large Floods", main = "The Relation Between Pressure and Number of Annual Large Floods")
-abline(lm(annual_num_large_flood$`n()` ~ pre_yr))
-```
-
 We can know from these pictures that pressure has a significant linear effect on number of floods. For extreme floods, it has less variance, while more variance on large floods. 
 
 
 
 ```{r}
 
-flood_N35_N70$Severity <- as.numeric(as.character(flood_N35_N70$Severity))
-for (j in 1:length(flood_N35_N70)) {
-        if (flood_N35_N70$Longitude[j] < 0) {
-                flood_N35_N70$Longitude[j] <- flood_N35_N70$Longitude[j] + 360
+floodinfo_N35_N70$Severity <- as.numeric(as.character(floodinfo_N35_N70$Severity))
+for (j in 1:length(floodinfo_N35_N70)) {
+        if (floodinfo_N35_N70$Longitude[j] < 0) {
+                floodinfo_N35_N70$Longitude[j] <- floodinfo_N35_N70$Longitude[j] + 360
         }
 }
 
 
 
-extract_info <- function(flood_N35_N70, phi.array) {
-        phi_sample <- rep(NA, nrow(flood_N35_N70))
-        for (i in 1:nrow(flood_N35_N70)) {
-                time_min <- as.numeric(flood_N35_N70$Began[i]
+extract_info <- function(floodinfor_N35_N70, phi.array) {
+        phi_sample <- rep(NA, nrow(floodinfo_N35_N70))
+        for (i in 1:nrow(floodinfo_N35_N70)) {
+                time_min <- as.numeric(floodinfo_N35_N70$Began[i]
                                        -as.Date("1948-01-01"))-15
-                time_max <- as.numeric(flood_N35_N70$Ended[i]
+                time_max <- as.numeric(floodinfo_N35_N70$Ended[i]
                                        -as.Date("1948-01-01"))+15
                 
-                lat_min <- flood_N35_N70$Latitude[i] - 2.5
+                lat_min <- floodinfo_N35_N70$Latitude[i] - 2.5
                 lat_min_index <- ceiling((lat_min-35) / 2.5)
-                lat_max <- flood_N35_N70$Latitude[i] + 2.5
+                lat_max <- floodinfo_N35_N70$Latitude[i] + 2.5
                 lat_max_index <- floor((lat_max-35) / 2.5)
                 
-                lon_min <- flood_N35_N70$Longitude[i] - 2.5
+                lon_min <- floodinfo_N35_N70$Longitude[i] - 2.5
                 lon_min_index <- ceiling(lon_min / 2.5)
-                lon_max <- flood_N35_N70$Longitude[i] + 2.5
+                lon_max <- floodinfo_N35_N70$Longitude[i] + 2.5
                 lon_max_index <- floor(lon_max / 2.5)
                 
                 phi_sample[i] <- mean(phi.array[lon_min_index:lon_max_index, lat_min_index:lat_max_index, time_min:time_max])
@@ -204,10 +228,10 @@ extract_info <- function(flood_N35_N70, phi.array) {
         return(phi_sample)
 }
 
-pressure_level <- extract_info(flood_N35_N70, phi.array)
+pressure_level <- extract_info(floodinfo_N35_N70, phi.array)
 
 #lm(flood_N35_N70$Severity~pressure_level)
-plot(flood_N35_N70$Severity~pressure_level)
+#plot(flood_N35_N70$Severity~pressure_level)
 #pc1 <- princomp(phi.array, cor = TRUE, scores = TRUE)
 #summary(pc1)
 
