@@ -17,6 +17,62 @@ In this project, we will analysis the global floods records from 1985 to 2008. S
 ##Distribution by main cause / death : top floods causes , different from cause of deaths
 
 
+```{r, echo=FALSE, fig.width = 15, fig.height = 5}
+setwd("/Users/vernon/Dropbox/courses/Columbia/STAT_W4701_EDA_and_visualization/hw/hw2/EDAV_Project_2/Yuhao_analysis_on_M6_floods/Proj2_final")
+file <- read.csv("GlobalFloodsRecord.csv", header = TRUE)
+file$Dead <- as.numeric(as.character(file$Dead))
+file <- na.omit(file)
+mod_file <- data.frame(file$Dead, tolower(file$Main.cause))
+
+
+heavy_rain = nrow(mod_file[grep("hea", mod_file$tolower.file.Main.cause),])
+tropical_cyclone = nrow(mod_file[grep("tropical cycl", mod_file$tolower.file.Main.cause),]) - nrow(mod_file[grep("extra", mod_file$tolower.file.Main.cause),])
+extra_tropical_cyclone = nrow(mod_file[grep("extra", mod_file$tolower.file.Main.cause),])
+monsoonal_rain = nrow(mod_file[grep("mon", mod_file$tolower.file.Main.cause),])
+snowmelt = nrow(mod_file[grep("snow", mod_file$tolower.file.Main.cause),])
+ice_jam_break_up = nrow(mod_file[grep("ice", mod_file$tolower.file.Main.cause),])
+dam_levy_break_release = nrow(mod_file[grep("dam", mod_file$tolower.file.Main.cause),])
+torrential_rain = nrow(mod_file[grep("torr", mod_file$tolower.file.Main.cause),])
+tidal_storm_surge = nrow(mod_file[grep("surge", mod_file$tolower.file.Main.cause),])
+avalanche_related = nrow(mod_file[grep("aval", mod_file$tolower.file.Main.cause),])
+
+par(mfrow=c(1,1))
+
+height1 = c(heavy_rain, tropical_cyclone,extra_tropical_cyclone,monsoonal_rain,snowmelt,ice_jam_break_up,dam_levy_break_release,torrential_rain, tidal_storm_surge, avalanche_related)
+name1 = c("heavy rain", "tropical cyclone","extra tropical cyclone","monsoonal rain","snowmelt","ice jam break up","dam levy break release","torrential rain", "tidal storm surge", "avalanche related")
+color1 = c("coral4","coral3","coral","coral3","coral2","coral","coral","coral3","coral","coral")
+barplot(height1, names.arg = name1, cex.names=0.8,cex.axis = 0.6, main = "Distribution of main causes", xlab = "main causes", ylab = "number of registers", col = color1, cex.lab = 2, cex.main = 3)
+
+```
+
+Next, we did some analysis of main causes and death. From the distribution of main causes, we found "heavy rain" is the primary main cause of floods, over 2500 registers of floods are caused by heavy rain, which is much higher than any other causes. 
+
+
+
+
+
+```{r, echo=FALSE,  fig.width = 15, fig.height = 5}
+heavy_rain_death = sum(mod_file[grep("hea", mod_file$tolower.file.Main.cause),]$file.Dead)
+tropical_death = sum(mod_file[grep("tropical cycl", mod_file$tolower.file.Main.cause),]$file.Dead) - sum(mod_file[grep("extra", mod_file$tolower.file.Main.cause),]$file.Dead)
+extra_tropical_death = sum(mod_file[grep("extra", mod_file$tolower.file.Main.cause),]$file.Dead)
+monsoonal_death = sum(mod_file[grep("mon", mod_file$tolower.file.Main.cause),]$file.Dead)
+snowmelt_death = sum(mod_file[grep("snow", mod_file$tolower.file.Main.cause),]$file.Dead)
+ice_jam_death = sum(mod_file[grep("ice", mod_file$tolower.file.Main.cause),]$file.Dead)
+dam_levy_death = sum(mod_file[grep("dam", mod_file$tolower.file.Main.cause),]$file.Dead)
+torrential_death = sum(mod_file[grep("torr", mod_file$tolower.file.Main.cause),]$file.Dead)
+tidal_death = sum(mod_file[grep("surge", mod_file$tolower.file.Main.cause),]$file.Dead)
+avalanche_death = sum(mod_file[grep("aval", mod_file$tolower.file.Main.cause),]$file.Dead)
+
+
+height2 = c(heavy_rain_death, tropical_death,extra_tropical_death,monsoonal_death,snowmelt_death,ice_jam_death,dam_levy_death,torrential_death, tidal_death, avalanche_death)
+name2 = c("heavy rain", "tropical cyclone","extra tropical cyclone","monsoonal rain","snowmelt","ice jam break up","dam levy break release","torrential rain", "tidal storm surge", "avalanche related")
+color2 = c("gray30","gray10","gray80","gray40","gray80","gray80","gray80","gray50","gray20","gray80")
+barplot(height2, names.arg = name2, cex.names=0.8,cex.axis = 0.6, main = "Distribution of death", xlab = "main causes", ylab = "number of deaths", col = color2, cex.lab = 2, cex.main = 3)
+
+```
+
+However, although "tropical cyclone" and "tidal storm surge" have only around 500 registers, respectively, they were the main causes of death. After ordering the top 10 registers which have the most number of death, 5 of the top 10 registers are caused by these two natural disasters. Compared to the death caused by "heavy rain", less than 100000 people died in floods caused by "heavy rain", although it's the primary main cause of floods.
+
 
 ##Displacement
 
