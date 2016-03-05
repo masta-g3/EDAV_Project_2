@@ -98,7 +98,7 @@ do.call( addMapLegend, c( mapParams, legendLabels="all", legendWidth=0.5))
 **Discussion:**
 
 * From the plots above, we find:
-    + There is always some displacement in the USA. More in 1985 compared to the later years studied. This may be due to better infrastructure and improved emergency management because USA has continued to have floods, as seen from Fig ???  
-    + Several regions in African continent have minimal displacement. This may be sttributed to no floods in those regions. This is supported by the finding that the African countries where people got displaced match the countries that had floods, as seen in Fig ??? (floods interactive map). However, it can't be ruled out that lack of record keeping may be a possible reason.  
+    + There is always some displacement in the USA. More in 1985 compared to the later years studied. This may be due to better infrastructure and improved emergency management because USA has continued to have floods, as seen from previous plots.  
+    + Several regions in African continent have minimal displacement. This may be sttributed to no floods in those regions. This is supported by the finding that the African countries where people got displaced match the countries that had floods. However, it can't be ruled out that lack of record keeping may be a possible reason.  
     + Asia has significant displacement. One of the factors is potentially the highest population density in Asia.
 
