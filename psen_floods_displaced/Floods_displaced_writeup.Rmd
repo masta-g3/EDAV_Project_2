@@ -1,0 +1,104 @@
+
+### **Visualize global displacement by floods**
+
+For this section, we are using subset data of countries and respective number of people displaced. In order to get a broad understanding of displacement over time, the graphs have been generated for every 10 years i.e. the number of people displaced has been mapped for the years 1985, 1995, 2005 amd 2015.
+
+
+#### Data Cleaning
+
+There were incorrect entries in country names as well as N/As in the number of people displaced. Country names were corrected e.g. removed space from front / back of country names. Only complete cases were taken into the analysis; so for entries with N/A, the entire row was omitted from analysis.
+
+
+#### Data subset for each year
+
+In order to make a plot for a year of interest, separate csv file for that year was generated using Python ('Flood file.py' attached separately). Output from Python file is a csv file for a year, which was saved separately as "country_flood_severity_displaced_year**.csv" to the working directory. 
+
+```{r include = FALSE}
+setwd("/Users/papiyasen/Desktop/MS-DS/ColU/Spring2016/Stat4701/HW2/psen_globalmap_displaced")
+```
+
+####  Visualizing areas with least to most Displaced
+
+In order to find if there are any changes in the number of people displaced over time, and also to check global areas with most dosplaced, we have done data visualization of the global areas with least to most displaced.
+```{r include = FALSE}
+
+library(rworldmap)
+library(RColorBrewer)
+#
+
+```
+
+```{r include = FALSE}
+f85 <- read.csv("country_flood_severity_displaced_year85.csv")
+
+sPDF85 <- joinCountryData2Map(f85, joinCode = "NAME", nameJoinColumn = "Country")
+        colourPalette <- brewer.pal(4,'GnBu')
+```
+
+```{r echo = FALSE}
+mapParams <- mapCountryData(sPDF85, nameColumnToPlot="Displaced",           colourPalette=colourPalette, catMethod=c(0,0.5e+06,1e+06,1.5e+06,2e+06),addLegend=FALSE, mapTitle = "Displaced by floods in 1985")
+
+do.call( addMapLegend, c( mapParams, legendLabels="all", legendWidth=0.5))
+#
+#
+
+```
+
+
+```{r include = FALSE}
+f95 <- read.csv("country_flood_severity_displaced_year95.csv")
+
+sPDF95 <- joinCountryData2Map(f95, joinCode = "NAME", nameJoinColumn = "Country")
+        colourPalette <- brewer.pal(4,'GnBu')
+
+```
+
+```{r echo = FALSE}
+mapParams <- mapCountryData(sPDF95, nameColumnToPlot="Displaced",           colourPalette=colourPalette, catMethod=c(0,0.5e+06,1e+06,1.5e+06,2e+06),addLegend=FALSE, mapTitle = "Displaced by floods in 1995")
+
+do.call( addMapLegend, c( mapParams, legendLabels="all", legendWidth=0.5))
+#
+#
+
+```
+
+
+```{r include = FALSE}
+f05 <- read.csv("country_flood_severity_displaced_year05.csv")
+
+sPDF05 <- joinCountryData2Map(f05, joinCode = "NAME", nameJoinColumn = "Country")
+        colourPalette <- brewer.pal(4,'GnBu')
+```
+
+```{r echo = FALSE}
+mapParams <- mapCountryData(sPDF05, nameColumnToPlot="Displaced",           colourPalette=colourPalette, catMethod=c(0,0.5e+06,1e+06,1.5e+06,2e+06),addLegend=FALSE, mapTitle = "Displaced by floods in 2005")
+
+do.call( addMapLegend, c( mapParams, legendLabels="all", legendWidth=0.5))
+#
+#
+```
+
+
+```{r include = FALSE}
+f15 <- read.csv("country_flood_severity_displaced_year15.csv")
+
+sPDF15 <- joinCountryData2Map(f15, joinCode = "NAME", nameJoinColumn = "Country")
+        colourPalette <- brewer.pal(4,'GnBu')
+```
+
+```{r echo = FALSE}
+mapParams <- mapCountryData(sPDF15, nameColumnToPlot="Displaced",           colourPalette=colourPalette, catMethod=c(0,0.5e+06,1e+06,1.5e+06,2e+06),addLegend=FALSE, mapTitle = "Displaced by floods in 2015")
+
+do.call( addMapLegend, c( mapParams, legendLabels="all", legendWidth=0.5))
+#
+#
+
+```
+
+**Discussion:**
+
+* From the plots above, we find:
+    + There is always some displacement in the USA. More in 1985 compared to the later years studied. This may be due to better infrastructure and improved emergency management because USA has continued to have floods, as seen from Fig ???  
+    + Several regions in African continent have minimal displacement. This may be sttributed to no floods in those regions. This is supported by the finding that the African countries where people got displaced match the countries that had floods, as seen in Fig ??? (floods interactive map). However, it can't be ruled out that lack of record keeping may be a possible reason.  
+    + Asia has significant displacement. One of the factors is potentially the highest population density in Asia.
+
