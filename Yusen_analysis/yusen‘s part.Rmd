@@ -1,0 +1,148 @@
+---
+title: "map part"
+author: "Yusen Wang"
+date: "February 27, 2016"
+output: html_document
+---
+
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+library(dplyr)
+flood <- read.csv("GlobalFloodsRecord.csv", header = T)
+
+nameuse <- c("Country", "Detailed.Locations..click.on.active.links.to.access.inundation.extents.", "Began", "Ended", "Duration.in.Days", "Dead", "Displaced", "Main.cause", "Severity..", "Affected.sq.km", "Magnitude..M...", "Centroid.X", "Centroid.Y", "M.6", "M.4")
+floodinfo <- flood[ , nameuse]
+colnames(floodinfo) <- c("Country", "Detailed.Locations", "Began", "Ended", "Duration", "Dead", "Displaced", "Cause", "Severity", "Affected.sq.km", "Magnitude", "Longitude", "Latitude", "Extreme", "Large")
+
+floodinfo$Longitude <- as.numeric(as.character(floodinfo$Longitude))
+floodinfo$Latitude <- as.numeric(as.character(floodinfo$Latitude))
+floodinfo <- na.omit(floodinfo)
+
+floodinfo$Began <- as.Date(as.character(floodinfo$Began), "%d-%B-%y")
+floodinfo$Ended <- as.Date(as.character(floodinfo$Ended), "%d-%B-%y")
+
+#floodinfo <- filter(floodinfo, Latitude <= 70 & Latitude >= 10)
+
+annual_num_extreme_flood <- floodinfo %>% 
+        mutate(Began_yr=as.numeric(format(as.POSIXct(floodinfo$Began,format="%Y-%m-%d %I:%M:%S %p"),"%Y"))) %>% 
+        group_by(Began_yr, Extreme) %>% 
+        summarise(n()) %>% filter(Extreme == 1)
+ 
+annual_num_large_flood <- floodinfo %>% 
+        mutate(Began_yr=as.numeric(format(as.POSIXct(floodinfo$Began,format="%Y-%m-%d %I:%M:%S %p"),"%Y"))) %>% 
+        group_by(Began_yr, Large) %>% 
+        summarise(n()) %>% filter(Large == 1)
+annual_num_large_flood <- annual_num_large_flood[-1, ]
+
+op <- par()
+par(mfrow = c(2, 1))
+plot(annual_num_large_flood$Began_yr, annual_num_large_flood$`n()`, "l", xlab = "Year", ylab = "Number", las = 3)
+title("Total Annual Large Floods (M>4) ")
+plot(annual_num_extreme_flood$Began_yr, annual_num_extreme_flood$`n()`, "l", xlab = "Year", ylab = "Number", las = 3)
+title("Total Annual Extreme Floods (M>6)")
+par(op)
+```
+
+We can see that total annual floods have an apparent periodicity. Large floods and extreme floods share a similar trend. What should be concerned is that we are in a dangerous time period now, because in 2015, large floods seem to touch the bottom of its periodicity. Maybe there would be more floods in 2016. 
+
+```{r,results='asis',tidy=FALSE, echo=FALSE, message=FALSE, warning=FALSE}
+library(googleVis)
+op <- options(gvis.plot.tag='chart')
+
+floodinfo$Latlong <- paste(floodinfo$Latitude, floodinfo$Longitude, sep = ":")
+FloodMap <- gvisMap(floodinfo, "Latlong", "Began",
+                     options=list(showTip=TRUE, 
+                                  showLine=TRUE, 
+                                  enableScrollWheel=TRUE,
+                                  mapType='terrain', 
+                                  useMapTypeControl=TRUE))
+plot(FloodMap)
+```
+
+
+Compare with the dynamic map which is created in shiny app, https://yusenwang.shinyapps.io/Dynamic_Flood_Map/
+We can see that .......
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+# Combine Cheng's part in this chunk.
+library(ncdf4)
+library(xlsx)
+library(reshape)
+fname <- 'NOAA_Daily_phi_500mb.nc'
+ncin <- nc_open(fname)
+#print(ncin)
+#data = read.xlsx('GlobalFloodsRecord.xls',1)
+
+time <- ncvar_get(ncin, 'T')
+tunits <- ncatt_get(ncin, 'T', 'units')
+
+lon <- ncvar_get(ncin,'X')
+lat <- ncvar_get(ncin, 'Y')
+
+pre <- ncvar_get(ncin, 'P')
+
+phi.array <- ncvar_get(ncin, 'phi')
+
+# worldwide
+ave <- NULL
+for (i in 1:24836){
+  ave[i] <- mean(phi.array[,,i])
+}
+ave_yr <- colMeans(matrix(ave, nrow=365))
+
+pre_yr <- ave_yr[38:(length(ave_yr)-1)]
+
+plot(pre_yr, annual_num_extreme_flood$`n()`, xlab = "Pressure by year: 1985-2015", ylab = "Total Number of Annual Extreme Floods", main = "The Relation Between Pressure and Number of Annual Extreme Floods")
+abline(lm(annual_num_extreme_flood$`n()` ~ pre_yr))
+
+plot(pre_yr, annual_num_large_flood$`n()`, xlab = "Pressure by year: 1985-2015", ylab = "Total Number of Annual Large Floods", main = "The Relation Between Pressure and Number of Annual Large Floods")
+abline(lm(annual_num_large_flood$`n()` ~ pre_yr))
+```
+
+We can know from these pictures that pressure has a significant linear effect on number of floods. For extreme floods, it has less variance, while more variance on large floods. 
+
+
+
+```{r}
+# Filter N10 - N70
+flood_N35_N70 <- filter(floodinfo, Latitude <= 70 & Latitude >= 35)
+flood_N35_N70$Severity <- as.numeric(as.character(flood_N35_N70$Severity))
+for (j in 1:length(flood_N35_N70)) {
+        if (flood_N35_N70$Longitude[j] < 0) {
+                flood_N35_N70$Longitude[j] <- flood_N35_N70$Longitude[j] + 360
+        }
+}
+
+
+
+extract_info <- function(flood_N35_N70, phi.array) {
+        phi_sample <- rep(NA, nrow(flood_N35_N70))
+        for (i in 1:nrow(flood_N35_N70)) {
+                time_min <- as.numeric(flood_N35_N70$Began[i]
+                                       -as.Date("1948-01-01"))-15
+                time_max <- as.numeric(flood_N35_N70$Ended[i]
+                                       -as.Date("1948-01-01"))+15
+                
+                lat_min <- flood_N35_N70$Latitude[i] - 2.5
+                lat_min_index <- ceiling((lat_min-35) / 2.5)
+                lat_max <- flood_N35_N70$Latitude[i] + 2.5
+                lat_max_index <- floor((lat_max-35) / 2.5)
+                
+                lon_min <- flood_N35_N70$Longitude[i] - 2.5
+                lon_min_index <- ceiling(lon_min / 2.5)
+                lon_max <- flood_N35_N70$Longitude[i] + 2.5
+                lon_max_index <- floor(lon_max / 2.5)
+                
+                phi_sample[i] <- mean(phi.array[lon_min_index:lon_max_index, lat_min_index:lat_max_index, time_min:time_max])
+        }
+        return(phi_sample)
+}
+
+pressure_level <- extract_info(flood_N35_N70, phi.array)
+
+#lm(flood_N35_N70$Severity~pressure_level)
+plot(flood_N35_N70$Severity~pressure_level)
+#pc1 <- princomp(phi.array, cor = TRUE, scores = TRUE)
+#summary(pc1)
+
+```
