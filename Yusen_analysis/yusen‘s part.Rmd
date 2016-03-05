@@ -21,26 +21,47 @@ floodinfo <- na.omit(floodinfo)
 floodinfo$Began <- as.Date(as.character(floodinfo$Began), "%d-%B-%y")
 floodinfo$Ended <- as.Date(as.character(floodinfo$Ended), "%d-%B-%y")
 
-#floodinfo <- filter(floodinfo, Latitude <= 70 & Latitude >= 10)
+floodinfo_N35_N70 <- filter(floodinfo, Latitude <= 70 & Latitude >= 35)
+floodinfo_N10_N35 <- filter(floodinfo, Latitude < 35 & Latitude >= 10)
 
-annual_num_extreme_flood <- floodinfo %>% 
-        mutate(Began_yr=as.numeric(format(as.POSIXct(floodinfo$Began,format="%Y-%m-%d %I:%M:%S %p"),"%Y"))) %>% 
-        group_by(Began_yr, Extreme) %>% 
-        summarise(n()) %>% filter(Extreme == 1)
- 
-annual_num_large_flood <- floodinfo %>% 
-        mutate(Began_yr=as.numeric(format(as.POSIXct(floodinfo$Began,format="%Y-%m-%d %I:%M:%S %p"),"%Y"))) %>% 
-        group_by(Began_yr, Large) %>% 
-        summarise(n()) %>% filter(Large == 1)
-annual_num_large_flood <- annual_num_large_flood[-1, ]
+periodicity_plot <- function (floodinfo) {
+        annual_num_extreme_flood <- floodinfo %>%
+                mutate(Began_yr=as.numeric(format(as.POSIXct(floodinfo$Began,format="%Y-%m-%d %I:%M:%S %p"),"%Y"))) %>% 
+                group_by(Began_yr, Extreme) %>% 
+                summarise(n()) %>% filter(Extreme == 1)
+        
+        annual_num_large_flood <- floodinfo %>%
+                mutate(Began_yr=as.numeric(format(as.POSIXct(floodinfo$Began,format="%Y-%m-%d %I:%M:%S %p"),"%Y"))) %>% 
+                group_by(Began_yr, Large) %>% 
+                summarise(n()) %>% filter(Large == 1)
+        annual_num_large_flood <- annual_num_large_flood[-1, ]
+        
+        op <- par()
+        par(mfrow = c(2, 1))
+        plot(annual_num_large_flood$Began_yr, annual_num_large_flood$`n()`, "l", xlab = "Year", ylab = "Number", las = 3)
+        title("Total Annual Large Floods (M>4) ")
+        plot(annual_num_extreme_flood$Began_yr, annual_num_extreme_flood$`n()`, "l", xlab = "Year", ylab = "Number", las = 3)
+        title("Total Annual Extreme Floods (M>6)")
+        par(op)
+}
+```
 
-op <- par()
-par(mfrow = c(2, 1))
-plot(annual_num_large_flood$Began_yr, annual_num_large_flood$`n()`, "l", xlab = "Year", ylab = "Number", las = 3)
-title("Total Annual Large Floods (M>4) ")
-plot(annual_num_extreme_flood$Began_yr, annual_num_extreme_flood$`n()`, "l", xlab = "Year", ylab = "Number", las = 3)
-title("Total Annual Extreme Floods (M>6)")
-par(op)
+Total annual floods worldwide.
+
+```{r}
+periodicity_plot(floodinfo)
+```
+
+Total annual floods in N35 - N70.
+
+```{r}
+periodicity_plot(floodinfo_N35_N70)
+```
+
+Total annual floods in N10 - N35.
+
+```{r}
+periodicity_plot(floodinfo_N10_N35)
 ```
 
 We can see that total annual floods have an apparent periodicity. Large floods and extreme floods share a similar trend. What should be concerned is that we are in a dangerous time period now, because in 2015, large floods seem to touch the bottom of its periodicity. Maybe there would be more floods in 2016. 
@@ -68,7 +89,7 @@ We can see that .......
 library(ncdf4)
 library(xlsx)
 library(reshape)
-fname <- 'NOAA_Daily_phi_500mb.nc'
+fname <- 'new_phi_data.nc'
 ncin <- nc_open(fname)
 #print(ncin)
 #data = read.xlsx('GlobalFloodsRecord.xls',1)
@@ -83,16 +104,63 @@ pre <- ncvar_get(ncin, 'P')
 
 phi.array <- ncvar_get(ncin, 'phi')
 
-# worldwide
-ave <- NULL
-for (i in 1:24836){
-  ave[i] <- mean(phi.array[,,i])
+year = 1948
+year_total= 0
+total_35  = 0 
+total_70 = 0
+days = 0
+year_ave = NULL
+ave_35_ls = NULL
+ave_70_ls = NULL
+for (i in 0:(length(time)-1)){
+  this_date = as.Date(i,origin = '1948-01-01')
+  this_year = as.numeric(format(this_date,'%Y'))
+  day_ave = mean(phi.array[,,i+1])
+  ave_35 = mean(phi.array[,15:25,i+1])
+  ave_70 = mean(phi.array[,1:14, i+1])
+  if (this_year==year){
+      year_total = year_total + day_ave
+      total_35 = total_35 + ave_35
+      total_70 = total_70 +ave_70
+      days = days + 1
+  }
+  else{
+    year_mean = year_total/days
+    mean_35 = total_35/days
+    mean_70 = total_70/days
+    year_ave = append(year_ave, year_mean)
+    ave_35_ls = append(ave_35_ls, mean_35)
+    ave_70_ls = append(ave_70_ls,mean_70)
+    year = year + 1
+    year_total = day_ave
+    total_35 = ave_35
+    total_70 = ave_70
+    days = 1
+  }
+  
 }
-ave_yr <- colMeans(matrix(ave, nrow=365))
+year_mean = year_total/days
+year_ave = c(year_ave, year_mean)
+mean_35 = total_35/days
+mean_70 = total_70/days
+ave_35_ls = append(ave_35_ls, mean_35)
+ave_70_ls = append(ave_70_ls, mean_70)
 
-pre_yr <- ave_yr[38:(length(ave_yr)-1)]
+phi_year = data.frame((1948 + 0:(length(year_ave)-2)),year_ave[-length(year_ave)]) 
+colnames(phi_year) = c('year', 'ave_phi')
 
-plot(pre_yr, annual_num_extreme_flood$`n()`, xlab = "Pressure by year: 1985-2015", ylab = "Total Number of Annual Extreme Floods", main = "The Relation Between Pressure and Number of Annual Extreme Floods")
+phi_year_35 = data.frame((1948 + 0:(length(ave_35_ls)-2)),ave_35_ls[-length(ave_35_ls)]) 
+colnames(phi_year_35) = c('year', 'ave_phi_35')
+
+phi_year_70 = data.frame((1948 + 0:(length(year_ave)-2)),year_ave[-length(ave_70_ls)]) 
+colnames(phi_year_70) = c('year', 'ave_phi_70')
+
+phi_all = data.frame(phi_year$year,phi_year$ave_phi,phi_year_35$ave_phi_35, phi_year_70$ave_phi_70)
+
+phi_all <- filter(phi_all, phi_year.year >= 1985 & phi_year.year <= 2015)
+
+
+plot(phi_all$phi_year.ave_phi, annual_num_extreme_flood$`n()`, xlab = "Pressure by year: 1985-2015", ylab = "Total Number of Annual Extreme Floods", main = "The Relation Between Pressure and Number of Annual Extreme Floods")
 abline(lm(annual_num_extreme_flood$`n()` ~ pre_yr))
 
 plot(pre_yr, annual_num_large_flood$`n()`, xlab = "Pressure by year: 1985-2015", ylab = "Total Number of Annual Large Floods", main = "The Relation Between Pressure and Number of Annual Large Floods")
@@ -104,8 +172,7 @@ We can know from these pictures that pressure has a significant linear effect on
 
 
 ```{r}
-# Filter N10 - N70
-flood_N35_N70 <- filter(floodinfo, Latitude <= 70 & Latitude >= 35)
+
 flood_N35_N70$Severity <- as.numeric(as.character(flood_N35_N70$Severity))
 for (j in 1:length(flood_N35_N70)) {
         if (flood_N35_N70$Longitude[j] < 0) {
