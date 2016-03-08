@@ -8,7 +8,7 @@ output: pdf_document
 In this project, we will analysis the global floods records from 1985 to 2008. Specifically, we will invesitgate the floods patterns over time, floods distribution across continent, causes of floods and relation between floods and air pressure. 
 
 
-##Floods over time – scatterplot, interactive plot
+##Floods patterns over time
 
 ```{r, echo=FALSE, message=FALSE, warning=FALSE}
 library(ncdf4)
