@@ -1,0 +1,9 @@
+base
+lubridate
+animation
+reshape2
+RColorBrewer
+gridExtra
+ggplot2
+ggmap
+dplyr

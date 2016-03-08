@@ -9,7 +9,7 @@ css: styles.css
 In this project, we will analysis the global floods records from 1985 to 2008. Specifically, we will invesitgate the floods patterns over time, floods distribution across continent, causes of floods and relation between floods and air pressure. 
 
 
-##Floods patterns over time
+##Floods Patterns Over Time
 
 ```{r, echo=FALSE, message=FALSE, warning=FALSE}
 library(ncdf4)
@@ -124,8 +124,211 @@ plot(FloodMap)
 
 Also, a [dynamic map](https://yusenwang.shinyapps.io/Dynamic_Flood_Map/) is available. To see that interactive map, click the words "dynamic map".
 
-##Floods by continent
+##Floods by Continent
 
+```{r libraries, echo=F, message=F, warning=F}
+library(lubridate)
+library(animation)
+library(reshape2)
+library(RColorBrewer)
+library(gridExtra)
+library(ggmap)
+library(dplyr)
+```
+
+```{r dataClean, echo=F, message=F, warning=F}
+################
+## DATA CLEAN ##
+################
+
+## Read floods.
+floods <- read.csv("GlobalFloodsRecord.csv", stringsAsFactors = F)
+
+## Clean and generate new columns.
+floods$lon <- as.numeric(floods$Centroid.X)
+floods$lat <- as.numeric(floods$Centroid.Y)
+floods$dead <- as.numeric(floods$Dead)
+floods$displaced <- as.numeric(floods$Displaced)
+floods$severity <- as.numeric(floods$Severity..)
+floods$damage <- as.numeric(floods$Damage..USD.)
+floods$country <- as.factor(floods$Main.cause)
+floods$other <- as.factor(floods$Country)
+floods$cause <- as.factor(floods$Other)
+floods$magnitude <- as.numeric(floods$Magnitude..M...)
+floods$began <- as.Date(floods$Began,"%d-%b-%y")
+floods$ended <- as.Date(floods$Ended,"%d-%b-%y")
+floods$start <- year(floods$began)
+floods$end <- year(floods$ended)
+
+
+## Remove useless columns and add grouping dates.
+floods2 <- tbl_df(floods[,-(1:30)])
+floods2 <- floods2[!is.na(floods2$began),]
+breaks = round(seq(1985, 2016, 7.75))
+floods2$breaks <- cut(floods2$start, breaks = breaks, labels = breaks[-1], right = F)
+levels(floods2$breaks) <- c("1985-1993","1994-2000","2001-2008","2009-2016")
+```
+
+As a next step in the analysis, we look at the distribution of floods across the different continents throughout time. The goal is to identify possible patterns, and address questions such as:
+
+- Have floods concentrated on particular continents during specific periods?
+- For any given continent, have there been more disastrous times in terms of floods and displacement?
+- Within continents, which regions are more susceptible to disasters caused by floods?
+
+To do this, we will divide the data into 4 roughly equally sized time periods: `r levels(floods2$breaks)`. We will then produce plots for each continent during these periods, highlighting the flood events that occurred with their size indicating their total impact as measured on a scale that depends on displacement. A contour plot will also help us identify where clusters of these events occurred.  
+
+```{r byContinent1, echo=F, message=F, warning=F, fig.width= 13, fig.height = 8, cache = T}
+#############################
+## FLOODS BY CONTINENT PT1 ##
+#############################
+
+flood.cols <- brewer.pal(n = 5, name = "OrRd")
+
+## NORTH AMERICA
+america <- get_map("America", zoom =4 , maptype = "roadmap")
+
+america.map <- ggmap(america,  extent="panel") %+%
+  floods2 +
+  #aes(x = lon, y = lat, z = log(displaced)) +
+  aes(x = lon, y = lat) +
+  #stat_summary_2d(fun = "sum", bins = 60, alpha = 0.75) + 
+  stat_density2d(aes(fill = ..level.., alpha = ..level..), geom = "polygon") +
+  scale_fill_gradientn(name = "Floods", colours = flood.cols, space = "Lab") +
+  scale_alpha(range = c(0.1, 0.5)) +
+  labs(x = "Longitude", y = "Latitude", title = "North America") +
+  theme(legend.position = "none", plot.title = element_text(size = rel(1.5))) +
+  coord_map()
+
+america.facet <- america.map +
+  geom_point(aes(x = lon, y = lat, size = displaced), fill="red", shape=21, alpha=0.6) +
+  facet_wrap(~ breaks)
+
+## SOUTH AMERICA
+south.america <- get_map("South America", zoom =4 , maptype = "roadmap")
+
+south.america.map <- ggmap(south.america,  extent="panel") %+%
+  floods2 +
+  #aes(x = lon, y = lat, z = log(displaced)) +
+  aes(x = lon, y = lat) +
+  #stat_summary_2d(fun = "sum", bins = 60, alpha = 0.75) + 
+  stat_density2d(aes(fill = ..level.., alpha = ..level..), geom = "polygon") +
+  scale_fill_gradientn(name = "Floods", colours = flood.cols, space = "Lab") +
+  scale_alpha(range = c(0.1, 0.5)) +
+  labs(x = "Longitude", y = "Latitude", title = "South America") +
+  theme(legend.position = "none", plot.title = element_text(size = rel(1.5))) +
+  coord_map()
+
+south.america.facet <- south.america.map +
+  geom_point(aes(x = lon, y = lat, size = displaced), fill="red", shape=21, alpha=0.6) +
+  facet_wrap(~ breaks)
+
+## PLOT THESE 2
+grid.arrange(america.facet, south.america.facet, ncol = 2)
+```
+
+Interestingly on North America the majority of the events are concentrated on the east coast, while South America shows the opposite pattern. Some regions that are constantly affected by floods are the U.S. Mid-West, the Yucatan Peninsula, and the region that encompasses Colombia and Ecuador. Cuba, being an island, is also highly susceptible to these kind of natural disasters, with a large-displacement event occurring on during the 2000's.
+
+```{r byContinent2, echo=F, message=F, warning=F, fig.width= 13, fig.height = 8, cache = T}
+#############################
+## FLOODS BY CONTINENT PT2 ##
+#############################
+
+## EUROPE
+europe <- get_map("Europe", zoom =4 , maptype = "roadmap")
+
+europe.map <- ggmap(europe,  extent="panel") %+%
+  floods2 +
+  #aes(x = lon, y = lat, z = log(displaced)) +
+  aes(x = lon, y = lat) +
+  #stat_summary_2d(fun = "sum", bins = 60, alpha = 0.75) + 
+  stat_density2d(aes(fill = ..level.., alpha = ..level..), geom = "polygon") +
+  scale_fill_gradientn(name = "Floods", colours = flood.cols, space = "Lab") +
+  scale_alpha(range = c(0.1, 0.5)) +
+  labs(x = "Longitude", y = "Latitude", title = "Europe") +
+  theme(legend.position = "none", plot.title = element_text(size = rel(1.5))) +
+  coord_map()
+
+europe.facet <- europe.map +
+  geom_point(aes(x = lon, y = lat, size = displaced), fill="red", shape=21, alpha=0.6) +
+  facet_wrap(~ breaks)
+
+## ASIA
+asia <- get_map("Asia", zoom =4 , maptype = "roadmap")
+
+asia.map <- ggmap(asia,  extent="panel") %+%
+  floods2 +
+  #aes(x = lon, y = lat, z = log(displaced)) +
+  aes(x = lon, y = lat) +
+  #stat_summary_2d(fun = "sum", bins = 60, alpha = 0.75) + 
+  stat_density2d(aes(fill = ..level.., alpha = ..level..), geom = "polygon") +
+  scale_fill_gradientn(name = "Floods", colours = flood.cols, space = "Lab") +
+  scale_alpha(range = c(0.1, 0.5)) +
+  labs(x = "Longitude", y = "Latitude", title = "Asia") +
+  theme(legend.position = "none", plot.title = element_text(size = rel(1.5))) +
+  coord_map()
+
+asia.facet <- asia.map +
+  geom_point(aes(x = lon, y = lat, size = displaced), fill="red", shape=21, alpha=0.6) +
+  facet_wrap(~ breaks)
+
+## PLOT THESE 2
+grid.arrange(europe.facet, asia.facet, ncol = 2)
+```
+
+Turning to Europe, we notice that starting on the 1900's the Balkan Peninsula became constantly impacted by flood disasters. The United Kingdom, due to its geographical position, is also exposed to a greater number of floods, although it had a relatively stable period throughout the second half of the 90's. We notice that displacement is generally low on this continent.
+
+The story on Asia is considerably different to what we have seen so far: floods are a frequent phenomena on the east coast of India, with China and the South-East region being constantly affected as well. Displacement tends to be generally higher, which could be explained both by the frequency of the events and by the civil planning required to handle them, although more investigation is required on the latest.
+
+```{r byContinent3, echo=F, message=F, warning=F, fig.width= 13, fig.height = 8, cache = T}
+#############################
+## FLOODS BY CONTINENT PT3 ##
+#############################
+
+## AFRICA
+africa <- get_map("Africa", zoom =4 , maptype = "roadmap")
+
+africa.map <- ggmap(africa,  extent="panel") %+%
+  floods2 +
+  #aes(x = lon, y = lat, z = log(displaced)) +
+  aes(x = lon, y = lat) +
+  #stat_summary_2d(fun = "sum", bins = 60, alpha = 0.75) + 
+  stat_density2d(aes(fill = ..level.., alpha = ..level..), geom = "polygon") +
+  scale_fill_gradientn(name = "Floods", colours = flood.cols, space = "Lab") +
+  scale_alpha(range = c(0.1, 0.5)) +
+  labs(x = "Longitude", y = "Latitude", title = "Africa") +
+  theme(legend.position = "none", plot.title = element_text(size = rel(1.5))) +
+  coord_map()
+
+africa.facet <- africa.map +
+  geom_point(aes(x = lon, y = lat, size = displaced), fill="red", shape=21, alpha=0.6) +
+  facet_wrap(~ breaks)
+
+## AUSTRALIA
+australia <- get_map("Australia", zoom =4 , maptype = "roadmap")
+
+australia.map <- ggmap(australia,  extent="panel") %+%
+  floods2 +
+  #aes(x = lon, y = lat, z = log(displaced)) +
+  aes(x = lon, y = lat) +
+  #stat_summary_2d(fun = "sum", bins = 60, alpha = 0.75) + 
+  stat_density2d(aes(fill = ..level.., alpha = ..level..), geom = "polygon") +
+  scale_fill_gradientn(name = "Floods", colours = flood.cols, space = "Lab") +
+  scale_alpha(range = c(0.1, 0.5)) +
+  labs(x = "Longitude", y = "Latitude", title = "Australia") +
+  theme(legend.position = "none", plot.title = element_text(size = rel(1.5))) +
+  coord_map()
+
+australia.facet <- australia.map +
+  geom_point(aes(x = lon, y = lat, size = displaced), fill="red", shape=21, alpha=0.6) +
+  facet_wrap(~ breaks)
+
+## PLOT THESE 2
+grid.arrange(africa.facet, australia.facet, ncol = 2)
+```
+
+Moving now to Africa, we see again the pattern of more floods occurring on the western coast. Displacement does not seems to be so prevalent, although this could be due to more inefficient bookkeeping? We also identify Kenya and Tanzania as 2 regions that are particularly prone to these disasters.
+
+Finally looking at Australia we notice that, although it is a continent with a large surface of contact with water, floods are not so prevalent. The clusters we observe correspond to the neighboring Indonesia and Malaysia, which are particularly succeptible.
 
 ##Distribution by main cause / death : top floods causes , different from cause of deaths
 
@@ -187,13 +390,14 @@ barplot(height2, names.arg = name2, cex.names=0.8,cex.axis = 0.6, main = "Distri
 However, although "tropical cyclone" and "tidal storm surge" have only around 500 registers, respectively, they were the main causes of death. After ordering the top 10 registers which have the most number of death, 5 of the top 10 registers are caused by these two natural disasters. Compared to the death caused by "heavy rain", less than 100000 people died in floods caused by "heavy rain", although it's the primary main cause of floods.
 
 
-##Displacement
+## Displacement
 
 ```{r include = FALSE, warning = FALSE}
 library(rworldmap)
 library(RColorBrewer)
 ```
 We also wanted to look at how floods affect displacement globally. We are using subset data of countries and respective number of people displaced. In order to get a broad understanding of displacement over time, the graphs have been generated for every 10 years i.e. the number of people displaced has been mapped for the years 1985, 1995, 2005 amd 2015.
+
 ```{r include = FALSE}
 f85 <- read.csv("country_flood_severity_displaced_year85.csv")
 
@@ -206,6 +410,7 @@ mapParams <- mapCountryData(sPDF85, nameColumnToPlot="Displaced",           colo
 
 do.call( addMapLegend, c( mapParams, legendLabels="all", legendWidth=0.5))
 ```
+
 ```{r include = FALSE}
 f95 <- read.csv("country_flood_severity_displaced_year95.csv")
 
@@ -218,7 +423,6 @@ mapParams <- mapCountryData(sPDF95, nameColumnToPlot="Displaced",           colo
 
 do.call( addMapLegend, c( mapParams, legendLabels="all", legendWidth=0.5))
 ```
-
 
 ```{r include = FALSE}
 f05 <- read.csv("country_flood_severity_displaced_year05.csv")
@@ -248,9 +452,8 @@ do.call( addMapLegend, c( mapParams, legendLabels="all", legendWidth=0.5))
 From the plots above, we find:
     + Several regions in African continent have minimal displacement. This may be sttributed to no floods in those regions. This is supported by the finding that the African countries where people got displaced match the countries that had floods. However, it can't be ruled out that lack of record keeping may be a possible reason.  
     + Asia has significant displacement. One of the factors is potentially the highest population density in Asia.
-   
     
-##M6 floods caused by heavy rain 
+##M6 Floods Caused by Heavy Rain
 
 ```{r, echo=FALSE, message=FALSE, warning=FALSE}
 #library(ncdf4)
@@ -337,11 +540,15 @@ write.csv(M6_China_loc,file = "M6_China.csv",row.names = FALSE)
 
 In this plot, we plotted all the floods locations with a level at least M6 happened in China from 1985 to 2015 with the death toll. As we can the most deadly floods happened in Hunan province. 
 
+##How Preassure Data Related to Floods
 
+As final part of our analysis, we will look at how preassure levels relate to floods and their intensity, if this relationship exists. First, it would be interesting to see how preassure levels vary over time, and investigate if the levels exhibit some patterns across the different coordinates. The plots below show this information, for selected time periods.
 
+![Daily Evolution of Preassure](preassure1.gif)
+![Daily Evolution of Preassure](preassure2.gif)
+![Daily Evolution of Preassure](preassure3.gif)
 
-
-##How phi data related to floods
+We see that although the pressure levels don't change throughout these different time periods, they do exhibit some seasonality and higher concentration on the latitudes closer to the equator. The plots below provide more information on how these patterns evolve. 
 
 ```{r, echo=FALSE, message=FALSE, warning=FALSE}
 ############################################# World
@@ -370,7 +577,7 @@ p1b = ggplot(data = bind2, aes(x = year, y = extreme))+geom_line(size = 3, alpha
 grid.arrange(p1a, p1b, ncol = 1)
 ```
 
-Aligned X-axis, ave_phi is increasing， dashed smooth line, M4 and M6 are increasing with some variances, but after 2010, a tendancy of decreasing.
+Aligned X-axis, ave_phi is increasing， dashed smooth line, M4 and M6 are increasing with some variances, but after 2010, a tenancy of decreasing.
 
 ```{r, echo=F}
 ################################################### N35-N70
@@ -468,8 +675,6 @@ ggplot(comp_data2,aes(x =ave_phi, y= extreme ))+geom_point(size = 2, alpha = 0.9
 ###########################################################################
 ```
 
-The dashed line is a fiited line from linear regression. We can see apparent positive relationships between average phi and floods whether or not floods are extreme or large.
+The dashed line is a fitted line from linear regression. We can see apparent positive relationships between average phi and floods whether or not floods are extreme or large.
 
 For extreme floods, it has less variance, while more variance on large floods.
-
-

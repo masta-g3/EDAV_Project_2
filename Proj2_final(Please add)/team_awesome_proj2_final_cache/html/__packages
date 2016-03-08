@@ -1,0 +1,15 @@
+base
+ncdf4
+rJava
+xlsxjars
+xlsx
+reshape
+dplyr
+ggplot2
+gridExtra
+googleVis
+lubridate
+animation
+reshape2
+RColorBrewer
+ggmap

@@ -52,14 +52,14 @@ As a next step in the analysis, we look at the distribution of floods across the
 
 - Have floods concentrated on particular continents during specific periods?
 - For any given continent, have there been more disastrous times in terms of floods and displacement?
-- Within continents, which regions are more succeptible to disasters caused by floods?
+- Within continents, which regions are more susceptible to disasters caused by floods?
 
-To do this, 
+To do this, we will divide the data into 4 roughly equally sized time periods: `r levels(floods2$breaks)`. We will then produce plots for each continent during these periods, highlighting the flood events that occurred with their size indicating their total impact as measured on a scale that depends on displacement. A contour plot will also help us identify where clusters of these events occurred.  
 
-```{r byContinent, echo=F, message=F, warning=F, fig.width= 13, fig.height = 8}
-#########################
-## FLOODS BY CONTINENT ##
-#########################
+```{r byContinent1, echo=F, message=F, warning=F, fig.width= 13, fig.height = 8, cache = T}
+#############################
+## FLOODS BY CONTINENT PT1 ##
+#############################
 
 flood.cols <- brewer.pal(n = 5, name = "OrRd")
 
@@ -75,11 +75,11 @@ america.map <- ggmap(america,  extent="panel") %+%
   scale_fill_gradientn(name = "Floods", colours = flood.cols, space = "Lab") +
   scale_alpha(range = c(0.1, 0.5)) +
   labs(x = "Longitude", y = "Latitude", title = "North America") +
-  theme(legend.position = "none") +
+  theme(legend.position = "none", plot.title = element_text(size = rel(1.5))) +
   coord_map()
 
 america.facet <- america.map +
-  geom_point(aes(x = lon, y = lat, size = displaced), fill="red", shape=21, alpha=0.8) +
+  geom_point(aes(x = lon, y = lat, size = displaced), fill="red", shape=21, alpha=0.6) +
   facet_wrap(~ breaks)
 
 ## SOUTH AMERICA
@@ -94,7 +94,7 @@ south.america.map <- ggmap(south.america,  extent="panel") %+%
   scale_fill_gradientn(name = "Floods", colours = flood.cols, space = "Lab") +
   scale_alpha(range = c(0.1, 0.5)) +
   labs(x = "Longitude", y = "Latitude", title = "South America") +
-  theme(legend.position = "none") +
+  theme(legend.position = "none", plot.title = element_text(size = rel(1.5))) +
   coord_map()
 
 south.america.facet <- south.america.map +
@@ -103,6 +103,14 @@ south.america.facet <- south.america.map +
 
 ## PLOT THESE 2
 grid.arrange(america.facet, south.america.facet, ncol = 2)
+```
+
+Interestingly on North America the majority of the events are concentrated on the east coast, while South America shows the opposite pattern. Some regions that are constantly affected by floods are the U.S. Mid-West, the Yucatan Peninsula, and the region that encompasses Colombia and Ecuador. Cuba, being an island, is also highly susceptible to these kind of natural disasters, with a large-displacement event occurring on during the 2000's.
+
+```{r byContinent2, echo=F, message=F, warning=F, fig.width= 13, fig.height = 8, cache = T}
+#############################
+## FLOODS BY CONTINENT PT2 ##
+#############################
 
 ## EUROPE
 europe <- get_map("Europe", zoom =4 , maptype = "roadmap")
@@ -116,7 +124,7 @@ europe.map <- ggmap(europe,  extent="panel") %+%
   scale_fill_gradientn(name = "Floods", colours = flood.cols, space = "Lab") +
   scale_alpha(range = c(0.1, 0.5)) +
   labs(x = "Longitude", y = "Latitude", title = "Europe") +
-  theme(legend.position = "none") +
+  theme(legend.position = "none", plot.title = element_text(size = rel(1.5))) +
   coord_map()
 
 europe.facet <- europe.map +
@@ -135,7 +143,7 @@ asia.map <- ggmap(asia,  extent="panel") %+%
   scale_fill_gradientn(name = "Floods", colours = flood.cols, space = "Lab") +
   scale_alpha(range = c(0.1, 0.5)) +
   labs(x = "Longitude", y = "Latitude", title = "Asia") +
-  theme(legend.position = "none") +
+  theme(legend.position = "none", plot.title = element_text(size = rel(1.5))) +
   coord_map()
 
 asia.facet <- asia.map +
@@ -144,6 +152,16 @@ asia.facet <- asia.map +
 
 ## PLOT THESE 2
 grid.arrange(europe.facet, asia.facet, ncol = 2)
+```
+
+Turning to Europe, we notice that starting on the 1900's the Balkan Peninsula became constantly impacted by flood disasters. The United Kingdom, due to its geographical position, is also exposed to a greater number of floods, although it had a relatively stable period throughout the second half of the 90's. We notice that displacement is generally low on this continent.
+
+The story on Asia is considerably different to what we have seen so far: floods are a frequent phenomena on the east coast of India, with China and the South-East region being constantly affected as well. Displacement tends to be generally higher, which could be explained both by the frequency of the events and by the civil planning required to handle them, although more investigation is required on the latest.
+
+```{r byContinent3, echo=F, message=F, warning=F, fig.width= 13, fig.height = 8, cache = T}
+#############################
+## FLOODS BY CONTINENT PT3 ##
+#############################
 
 ## AFRICA
 africa <- get_map("Africa", zoom =4 , maptype = "roadmap")
@@ -157,7 +175,7 @@ africa.map <- ggmap(africa,  extent="panel") %+%
   scale_fill_gradientn(name = "Floods", colours = flood.cols, space = "Lab") +
   scale_alpha(range = c(0.1, 0.5)) +
   labs(x = "Longitude", y = "Latitude", title = "Africa") +
-  theme(legend.position = "none") +
+  theme(legend.position = "none", plot.title = element_text(size = rel(1.5))) +
   coord_map()
 
 africa.facet <- africa.map +
@@ -176,7 +194,7 @@ australia.map <- ggmap(australia,  extent="panel") %+%
   scale_fill_gradientn(name = "Floods", colours = flood.cols, space = "Lab") +
   scale_alpha(range = c(0.1, 0.5)) +
   labs(x = "Longitude", y = "Latitude", title = "Australia") +
-  theme(legend.position = "none") +
+  theme(legend.position = "none", plot.title = element_text(size = rel(1.5))) +
   coord_map()
 
 australia.facet <- australia.map +
@@ -185,5 +203,8 @@ australia.facet <- australia.map +
 
 ## PLOT THESE 2
 grid.arrange(africa.facet, australia.facet, ncol = 2)
-
 ```
+
+Moving now to Africa, we see again the pattern of more floods occurring on the western coast. Displacement does not seems to be so prevalent, although this could be due to more inefficient bookkeeping? We also identify Kenya and Tanzania as 2 regions that are particularly prone to these disasters.
+
+Finally looking at Australia we notice that, although it is a continent with a large surface of contact with water, floods are not so prevalent. The clusters we observe correspond to the neighboring Indonesia and Malaysia, which are particularly succeptible.
