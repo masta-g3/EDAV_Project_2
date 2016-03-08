@@ -391,7 +391,7 @@ barplot(height2, names.arg = name2, cex.names=0.8,cex.axis = 0.6, main = "Distri
 However, although "tropical cyclone" and "tidal storm surge" have only around 500 registers, respectively, they were the main causes of death. After ordering the top 10 registers which have the most number of death, 5 of the top 10 registers are caused by these two natural disasters. Compared to the death caused by "heavy rain", less than 100000 people died in floods caused by "heavy rain", although it's the primary main cause of floods.
 
 
-## Displacement
+## Displacement Caused by Floods
 
 ```{r include = FALSE, warning = FALSE}
 library(rworldmap)
@@ -456,7 +456,7 @@ From the plots above, we find:
 * Several regions in African continent have minimal displacement. This may be sttributed to no floods in those regions. This is supported by the finding that the African countries where people got displaced match the countries that had floods. However, it can't be ruled out that lack of record keeping may be a possible reason.
 * Asia has significant displacement. One of the factors is potentially the highest population density in Asia.
     
-##M6 Floods Caused by Heavy Rain
+##M6 Level Floods Caused by Heavy Rain
 
 ```{r, echo=FALSE, message=FALSE, warning=FALSE}
 #library(ncdf4)
@@ -541,7 +541,7 @@ write.csv(M6_China_loc,file = "M6_China.csv",row.names = FALSE)
 
 !["plot 2"](M6_China.png) 
 
-In this plot, we plotted all the floods locations with a level at least M6 happened in China from 1985 to 2015 with the death toll. As we can the most deadly floods happened in Hunan province. 
+In this plot, we plotted all the floods locations with a level at least M6 happened in China from 1985 to 2015 with the death toll. As we can see the most deadly floods happened in Hunan province. One flood happened outside China which affected Chinese territory is also shown on the map for accuracy. 
 
 ##How Preassure Data Related to Floods
 
