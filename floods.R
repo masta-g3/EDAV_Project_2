@@ -185,3 +185,49 @@ australia.facet <- australia.map +
   facet_wrap(~ breaks)
 
 australia.facet
+
+
+### GIFs
+fname <- 'new_phi_data_cc.nc'
+ncin <- nc_open(fname)
+
+time <- ncvar_get(ncin, 'T')
+lon <- ncvar_get(ncin,'X')
+lat <- rev(ncvar_get(ncin, 'Y'))
+pre <- ncvar_get(ncin, 'P')
+
+phi.array <- ncvar_get(ncin, 'phi')
+
+length(time)
+
+saveGIF({
+  for(i in 365:547) {
+    phi.slice <- phi.array[ , , i]
+    image(lon, lat, phi.slice, col = brewer.pal(10, "RdBu"))
+    title(main=as.Date("1948-01-01") + i)
+  }
+}, movie.name = "preassure1.gif", interval = 0.1, ani.width = 400, ani.height = 200)
+
+saveGIF({
+  for(i in 12447:12629) {
+    phi.slice <- phi.array[ , , i]
+    image(lon, lat, phi.slice, col = brewer.pal(10, "RdBu"))
+    title(main=as.Date("1948-01-01") + i)
+  }
+}, movie.name = "preassure2.gif", interval = 0.1, ani.width = 400, ani.height = 200)
+
+saveGIF({
+  for(i in 23617:23799) {
+    phi.slice <- phi.array[ , , i]
+    image(lon, lat, phi.slice, col = brewer.pal(10, "RdBu"))
+    title(main=as.Date("1948-01-01") + i)
+  }
+}, movie.name = "preassure3.gif", interval = 0.1, ani.width = 400, ani.height = 200)
+
+saveGIF({
+  for(i in 24712:24895) {
+    phi.slice <- phi.array[ , , i]
+    image(lon, lat, phi.slice, col = brewer.pal(10, "RdBu"))
+    title(main=as.Date("1948-01-01") + i)
+  }
+}, movie.name = "preassure4.gif", interval = 0.1, ani.width = 400, ani.height = 200)

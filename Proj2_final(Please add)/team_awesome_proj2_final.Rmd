@@ -547,6 +547,7 @@ As final part of our analysis, we will look at how preassure levels relate to fl
 ![Daily Evolution of Preassure](preassure1.gif)
 ![Daily Evolution of Preassure](preassure2.gif)
 ![Daily Evolution of Preassure](preassure3.gif)
+![Daily Evolution of Preassure](preassure4.gif)
 
 We see that although the pressure levels don't change throughout these different time periods, they do exhibit some seasonality and higher concentration on the latitudes closer to the equator. The plots below provide more information on how these patterns evolve. 
 
