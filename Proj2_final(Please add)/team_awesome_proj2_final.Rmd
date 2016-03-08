@@ -143,7 +143,7 @@ library(dplyr)
 ################
 
 ## Read floods.
-floods <- read.csv("GlobalFloodsManuel.csv", stringsAsFactors = F)
+floods <- read.csv("GlobalFloods2.csv", stringsAsFactors = F)
 
 ## Clean and generate new columns.
 floods$lon <- as.numeric(floods$Centroid.X)
@@ -470,7 +470,7 @@ From previous analysis, we found that heavy rain is the reason which caused the 
 ```{r, echo=FALSE, message=FALSE}
 #setwd("/Users/vernon/Dropbox/courses/Columbia/STAT_W4701_EDA_and_visualization/hw/hw2/EDAV_Project_2/Yuhao_analysis_on_M6_floods/Proj2_final")
 
-records = read.csv("record_new_yuhao.csv",na.strings = "NA")
+records = read.csv("record_new_3.csv",na.strings = "NA")
 
 records_clean = records[,c(-2,-3,-6,-5,-7)]
 records_clean = records_clean[c(-820,-1997,-2001,-2002,-1010,-2008,-4043),]
