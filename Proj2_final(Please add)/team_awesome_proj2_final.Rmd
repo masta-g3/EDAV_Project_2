@@ -331,10 +331,10 @@ Moving now to Africa, we see again the pattern of more floods occurring on the w
 
 Finally looking at Australia we notice that, although it is a continent with a large surface of contact with water, floods are not so prevalent. The clusters we observe correspond to the neighboring Indonesia and Malaysia, which are particularly succeptible.
 
-##Distribution by main cause / death : top floods causes , different from cause of deaths
+##Causes of Floods
 
 
-```{r, echo=FALSE, fig.width = 15, fig.height = 5}
+```{r, echo=FALSE, fig.width = 15, fig.height = 5, warning=FALSE}
 #setwd("/Users/vernon/Dropbox/courses/Columbia/STAT_W4701_EDA_and_visualization/hw/hw2/EDAV_Project_2/Yuhao_analysis_on_M6_floods/Proj2_final")
 file <- read.csv("GlobalFloodsRecord.csv", header = TRUE)
 file$Dead <- as.numeric(as.character(file$Dead))
@@ -450,9 +450,11 @@ mapParams <- mapCountryData(sPDF15, nameColumnToPlot="Displaced",           colo
 
 do.call( addMapLegend, c( mapParams, legendLabels="all", legendWidth=0.5))
 ```
+
 From the plots above, we find:
-    + Several regions in African continent have minimal displacement. This may be sttributed to no floods in those regions. This is supported by the finding that the African countries where people got displaced match the countries that had floods. However, it can't be ruled out that lack of record keeping may be a possible reason.  
-    + Asia has significant displacement. One of the factors is potentially the highest population density in Asia.
+
+* Several regions in African continent have minimal displacement. This may be sttributed to no floods in those regions. This is supported by the finding that the African countries where people got displaced match the countries that had floods. However, it can't be ruled out that lack of record keeping may be a possible reason.
+* Asia has significant displacement. One of the factors is potentially the highest population density in Asia.
     
 ##M6 Floods Caused by Heavy Rain
 
@@ -577,7 +579,7 @@ phi_year_sub = subset(phi_year,year>=1985)
 ggplot(phi_year_sub, aes(x = year, y = ave_phi))+ geom_point(size = 3, alpha = 0.5, color = '#66b3ff')+geom_smooth(se = F,size = 0.75, color = '#3399ff', linetype = 'dashed') +theme_bw()+ ggtitle('Worldwide Average Phi by Years') + ylab('Average Phi') 
 ```
 
-We plot the average phi through years with the dashed smooth line. Aligned X-axis, ave_phi is increasing. Does the number of floods share a same trend? We then plot twos figures to show that based on different types of magnitude, extreme (M>6) and large (M>4).
+We plot the average phi through years with the dashed smooth line. Aligned X-axis, ave_phi is increasing. Does the number of floods share a same trend? We then plot two figures to show that based on different types of magnitude, extreme (M>6) and large (M>4).
 
 ```{r, echo=FALSE, message=FALSE, warning=FALSE}
 p1a = ggplot(data = bind, aes(x = year, y = large))+geom_line(size = 3, alpha = 0.5, color = '#66b3ff')+theme_bw()+ ggtitle('Worldwide M4_average') + ylab('# of floods') 
@@ -589,7 +591,7 @@ p1b = ggplot(data = bind2, aes(x = year, y = extreme))+geom_line(size = 3, alpha
 grid.arrange(p1a, p1b, ncol = 1)
 ```
 
-The results show that M4 and M6 are increasing with periodicity and some variances, but after 2010, M4 has a tendancy of decreasing, while M6 still keeps in a high leverl.
+The results show that M4 and M6 are increasing with periodicity and some variances, but after 2010, M4 has a tendancy of decreasing, while M6 still keeps in a high level.
 
 Then we look at the results in middle and high latitude regions (N35-N70).
 
