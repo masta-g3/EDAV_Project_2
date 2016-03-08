@@ -2,8 +2,7 @@
 title: "Investigation of Floods (EDAV Proj.2)"
 author: "Team - Awesome"
 date: "March 5, 2016"
-output: html_document
-css: styles.css
+output: pdf_document
 ---
 ##Project Description
 In this project, we will analysis the global floods records from 1985 to 2008. Specifically, we will invesitgate the floods patterns over time, floods distribution across continent, causes of floods and relation between floods and air pressure. 
@@ -131,7 +130,7 @@ Also, a [dynamic map](https://yusenwang.shinyapps.io/Dynamic_Flood_Map/) is avai
 
 
 ```{r, echo=FALSE, fig.width = 15, fig.height = 5}
-#setwd("/Users/vernon/Dropbox/courses/Columbia/STAT_W4701_EDA_and_visualization/hw/hw2/EDAV_Project_2/Yuhao_analysis_on_M6_floods/Proj2_final")
+setwd("/Users/vernon/Dropbox/courses/Columbia/STAT_W4701_EDA_and_visualization/hw/hw2/EDAV_Project_2/Yuhao_analysis_on_M6_floods/Proj2_final")
 file <- read.csv("GlobalFloodsRecord.csv", header = TRUE)
 file$Dead <- as.numeric(as.character(file$Dead))
 file <- na.omit(file)
@@ -262,7 +261,7 @@ library(png)
 From previous analysis, we found that heavy rain is the reason which caused the largest number of floods. Here, we researched on the floods caused by heavy rain that had a level of M6. We count the occurence of M6 level floods at each countries from 1985 to 2008. The countries with the largest 20 occurence are displayed in the following dotchart. From the plot, we can see that in the time period 1985 to 2008 China and USA have much more M6 floods than other countries. We then analysised the M6 floods in China. 
 
 ```{r, echo=FALSE, message=FALSE}
-#setwd("/Users/vernon/Dropbox/courses/Columbia/STAT_W4701_EDA_and_visualization/hw/hw2/EDAV_Project_2/Yuhao_analysis_on_M6_floods/Proj2_final")
+setwd("/Users/vernon/Dropbox/courses/Columbia/STAT_W4701_EDA_and_visualization/hw/hw2/EDAV_Project_2/Yuhao_analysis_on_M6_floods/Proj2_final")
 
 records = read.csv("record_new_yuhao.csv",na.strings = "NA")
 
@@ -361,16 +360,16 @@ colnames(bind) = c('year','large')
 phi_year_sub = subset(phi_year,year>=1985)
 ggplot(phi_year_sub, aes(x = year, y = ave_phi))+ geom_point(size = 3, alpha = 0.5, color = '#66b3ff')+geom_smooth(se = F,size = 0.75, color = '#3399ff', linetype = 'dashed') +theme_bw()+ ggtitle('Average Phi by Years') + ylab('Average Phi') 
 
-p1a = ggplot(data = bind, aes(x = year, y = large))+geom_line(size = 3, alpha = 0.5, color = '#66b3ff')+theme_bw()+ ggtitle('M4_average') + ylab('# of floods') 
+p1a = ggplot(data = bind, aes(x = year, y = large))+geom_line(size = 3, alpha = 0.5, color = '#66b3ff')+theme_bw()+ ggtitle('M4 Floods by Years') + ylab('# of floods') 
 
 bind2 = data.frame(annual_num_extreme_flood_yr$Began_yr, annual_num_extreme_flood_yr$`n()`)
 colnames(bind2) = c('year','extreme')
-p1b = ggplot(data = bind2, aes(x = year, y = extreme))+geom_line(size = 3, alpha = 0.5, color = '#ff6600')+theme_bw()+ ggtitle('M6_average') + ylab('# of floods')
+p1b = ggplot(data = bind2, aes(x = year, y = extreme))+geom_line(size = 3, alpha = 0.5, color = '#ff6600')+theme_bw()+ ggtitle('M6 Floods by Years') + ylab('# of floods')
 
 grid.arrange(p1a, p1b, ncol = 1)
 ```
 
-Aligned X-axis, ave_phi is increasing， dashed smooth line, M4 and M6 are increasing with some variances, but after 2010, a tendancy of decreasing.
+We gather daily gridded geopotential height data(phi) from http://iridl.ldeo.columbia.edu/SOURCES/.NOAA/.NCEP-NCAR/.CDAS-1/.DAILY/.Intrinsic/.PressureLevel/, which has the longitude 0E to 2.5W and latitude 70N to 10N. Then we plot the average phi through years with the dashed smooth line. And it shows that the annual average phi value is increasing. Also, we have number of M4 and M6 floods through years. We can see from plots that the numbers of M4 or M6 is increasing with some variances. 
 
 ```{r, echo=F}
 ################################################### N35-N70
@@ -389,19 +388,18 @@ binda = data.frame(annual_num_large_flood_70$Began_yr, annual_num_large_flood_70
 colnames(binda) = c('year','large')
 phi_year_70_sub = subset(phi_year_70, year>=1985)
 
-ggplot(phi_year_70_sub, aes(x = year, y = ave_phi_70))+ geom_point(size = 3, alpha = 0.5, color = '#66b3ff')+geom_smooth(se = F,size = 0.75, color = '#3399ff', linetype = 'dashed') +theme_bw()+ ggtitle('Average Phi by Years_N35-N70') + ylab('Average Phi') 
+ggplot(phi_year_70_sub, aes(x = year, y = ave_phi_70))+ geom_point(size = 3, alpha = 0.5, color = '#66b3ff')+geom_smooth(se = F,size = 0.75, color = '#3399ff', linetype = 'dashed') +theme_bw()+ ggtitle('Average Phi by Years 36N-70N') + ylab('Average Phi') 
 
-p2a = ggplot(data = binda, aes(x = year, y = large))+geom_line(size = 3, alpha = 0.5, color = '#66b3ff')+theme_bw()+ ggtitle('M4_N34-N70') + ylab('# of floods') 
+p2a = ggplot(data = binda, aes(x = year, y = large))+geom_line(size = 3, alpha = 0.5, color = '#66b3ff')+theme_bw()+ ggtitle('M4 by Years 36N-70N') + ylab('# of floods') 
 
 bind2a = data.frame(annual_num_extreme_flood_70$Began_yr, annual_num_extreme_flood_70$`n()`)
 colnames(bind2a) = c('year','extreme')
-p2b = ggplot(data = bind2a, aes(x = year, y = extreme))+geom_line(size = 3, alpha = 0.5, color = '#ff6600')+theme_bw()+ ggtitle('M6_N34-N70') + ylab('# of floods')
+p2b = ggplot(data = bind2a, aes(x = year, y = extreme))+geom_line(size = 3, alpha = 0.5, color = '#ff6600')+theme_bw()+ ggtitle('M6 by Years 36N-70N') + ylab('# of floods')
 grid.arrange(p2a, p2b,ncol = 1)
 
 ```
 
-Same tendency as total, but with less magnitude.
-
+As the plots aboved, we can observe the same tendency as the total ones, but the vertical axis scales indicate the less number of M4/M6 floods and smaller average phi values through longitude 0E to 2.5W and latitude 70N to 36N.
 
 ```{r, echo=F}
 ################################################## N10-N35
@@ -419,20 +417,18 @@ annual_num_large_flood_35 <- annual_num_large_flood_35[-1, ]
 bindb = data.frame(annual_num_large_flood_35$Began_yr, annual_num_large_flood_35$`n()`)
 colnames(bindb) = c('year','large')
 phi_year_35_sub = subset(phi_year_35, year>=1985)
-ggplot(phi_year_35_sub, aes(x = year, y = ave_phi_35))+ geom_point(size = 3, alpha = 0.5, color = '#66b3ff')+geom_smooth(se = F,size = 0.75, color = '#3399ff', linetype = 'dashed') +theme_bw()+ ggtitle('Average Phi by Years_N10-N35') + ylab('Average Phi') 
+ggplot(phi_year_35_sub, aes(x = year, y = ave_phi_35))+ geom_point(size = 3, alpha = 0.5, color = '#66b3ff')+geom_smooth(se = F,size = 0.75, color = '#3399ff', linetype = 'dashed') +theme_bw()+ ggtitle('Average Phi by Years 10N-35N') + ylab('Average Phi') 
 
-p3a = ggplot(data = bindb, aes(x = year, y = large))+geom_line(size = 3, alpha = 0.5, color = '#66b3ff')+theme_bw()+ ggtitle('M4_N10-N35') + ylab('# of floods') 
+p3a = ggplot(data = bindb, aes(x = year, y = large))+geom_line(size = 3, alpha = 0.5, color = '#66b3ff')+theme_bw()+ ggtitle('M4 by Years 10N-35N') + ylab('# of floods') 
 
 bind2b = data.frame(annual_num_extreme_flood_35$Began_yr, annual_num_extreme_flood_35$`n()`)
 colnames(bind2b) = c('year','extreme')
-p3b = ggplot(data = bind2b, aes(x = year, y = extreme))+geom_line(size = 3, alpha = 0.5, color = '#ff6600')+theme_bw()+ ggtitle('M6_N10-N35') + ylab('# of floods')
+p3b = ggplot(data = bind2b, aes(x = year, y = extreme))+geom_line(size = 3, alpha = 0.5, color = '#ff6600')+theme_bw()+ ggtitle('M6 by Years 10N-35N') + ylab('# of floods')
 grid.arrange(p3a, p3b, ncol=1)
 
 ```
 
-Same tendency as total, with higher magnitude.
-
-Based on above plots, we can see that total annual floods have an apparent periodicity. Large floods and extreme floods share a similar trend. What should be concerned is that we are in a dangerous time period now, because in 2015, large floods seem to touch the bottom of its periodicity. Maybe there would be more floods in 2016.
+As the plots aboved, we can observe the same tendency as the last ones, but the vertical axis scales indicate the more number of M4/M6 floods and larger average phi values through longitude 0E to 2.5W and latitude 35N to 10N than longitude 0E to 2.5W and latitude 70N to 36N .
 
 ```{r,echo = F}
 ########################################## compare all
@@ -449,8 +445,7 @@ ggplot() + geom_point(data = bind2, aes(x = year, y = extreme, color = 'Total'),
 
 ```
 
-10N-35N has higher average phi, and more floods.  
-35n-70N has lower average phi, and less floods.
+Based on above plots, we can see that the total average phi values are increasing. Moreover, the 10N to 35N area has a higher average than the 36N to 70N's. Also, total annual floods have an apparent periodicity. Large floods and extreme floods share a similar trend. What should be concerned is that we are in a dangerous time period now, because in 2015, large floods seem to touch the bottom of its periodicity. Maybe there would be more floods in 2016.
 
 ```{r,echo=F}
 
