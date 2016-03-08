@@ -1,0 +1,189 @@
+---
+title: "Investigation of Floods (Manuel Segment)"
+author: "Team - Awesome"
+css: styles.css
+output: html_document
+---
+
+```{r libraries, echo=F, message=F, warning=F}
+library(lubridate)
+library(animation)
+library(reshape2)
+library(RColorBrewer)
+library(gridExtra)
+library(ggmap)
+library(dplyr)
+```
+
+```{r dataClean, echo=F, message=F, warning=F}
+################
+## DATA CLEAN ##
+################
+
+## Read floods.
+floods <- read.csv("GlobalFloodsRecord.csv", stringsAsFactors = F)
+
+## Clean and generate new columns.
+floods$lon <- as.numeric(floods$Centroid.X)
+floods$lat <- as.numeric(floods$Centroid.Y)
+floods$dead <- as.numeric(floods$Dead)
+floods$displaced <- as.numeric(floods$Displaced)
+floods$severity <- as.numeric(floods$Severity..)
+floods$damage <- as.numeric(floods$Damage..USD.)
+floods$country <- as.factor(floods$Main.cause)
+floods$other <- as.factor(floods$Country)
+floods$cause <- as.factor(floods$Other)
+floods$magnitude <- as.numeric(floods$Magnitude..M...)
+floods$began <- as.Date(floods$Began,"%d-%b-%y")
+floods$ended <- as.Date(floods$Ended,"%d-%b-%y")
+floods$start <- year(floods$began)
+floods$end <- year(floods$ended)
+
+
+## Remove useless columns and add grouping dates.
+floods2 <- tbl_df(floods[,-(1:30)])
+floods2 <- floods2[!is.na(floods2$began),]
+breaks = round(seq(1985, 2016, 7.75))
+floods2$breaks <- cut(floods2$start, breaks = breaks, labels = breaks[-1], right = F)
+levels(floods2$breaks) <- c("1985-1993","1994-2000","2001-2008","2009-2016")
+```
+
+As a next step in the analysis, we look at the distribution of floods across the different continents throughout time. The goal is to identify possible patterns, and address questions such as:
+
+- Have floods concentrated on particular continents during specific periods?
+- For any given continent, have there been more disastrous times in terms of floods and displacement?
+- Within continents, which regions are more succeptible to disasters caused by floods?
+
+To do this, 
+
+```{r byContinent, echo=F, message=F, warning=F, fig.width= 13, fig.height = 8}
+#########################
+## FLOODS BY CONTINENT ##
+#########################
+
+flood.cols <- brewer.pal(n = 5, name = "OrRd")
+
+## NORTH AMERICA
+america <- get_map("America", zoom =4 , maptype = "roadmap")
+
+america.map <- ggmap(america,  extent="panel") %+%
+  floods2 +
+  #aes(x = lon, y = lat, z = log(displaced)) +
+  aes(x = lon, y = lat) +
+  #stat_summary_2d(fun = "sum", bins = 60, alpha = 0.75) + 
+  stat_density2d(aes(fill = ..level.., alpha = ..level..), geom = "polygon") +
+  scale_fill_gradientn(name = "Floods", colours = flood.cols, space = "Lab") +
+  scale_alpha(range = c(0.1, 0.5)) +
+  labs(x = "Longitude", y = "Latitude", title = "North America") +
+  theme(legend.position = "none") +
+  coord_map()
+
+america.facet <- america.map +
+  geom_point(aes(x = lon, y = lat, size = displaced), fill="red", shape=21, alpha=0.8) +
+  facet_wrap(~ breaks)
+
+## SOUTH AMERICA
+south.america <- get_map("South America", zoom =4 , maptype = "roadmap")
+
+south.america.map <- ggmap(south.america,  extent="panel") %+%
+  floods2 +
+  #aes(x = lon, y = lat, z = log(displaced)) +
+  aes(x = lon, y = lat) +
+  #stat_summary_2d(fun = "sum", bins = 60, alpha = 0.75) + 
+  stat_density2d(aes(fill = ..level.., alpha = ..level..), geom = "polygon") +
+  scale_fill_gradientn(name = "Floods", colours = flood.cols, space = "Lab") +
+  scale_alpha(range = c(0.1, 0.5)) +
+  labs(x = "Longitude", y = "Latitude", title = "South America") +
+  theme(legend.position = "none") +
+  coord_map()
+
+south.america.facet <- south.america.map +
+  geom_point(aes(x = lon, y = lat, size = displaced), fill="red", shape=21, alpha=0.8) +
+  facet_wrap(~ breaks)
+
+## PLOT THESE 2
+grid.arrange(america.facet, south.america.facet, ncol = 2)
+
+## EUROPE
+europe <- get_map("Europe", zoom =4 , maptype = "roadmap")
+
+europe.map <- ggmap(europe,  extent="panel") %+%
+  floods2 +
+  #aes(x = lon, y = lat, z = log(displaced)) +
+  aes(x = lon, y = lat) +
+  #stat_summary_2d(fun = "sum", bins = 60, alpha = 0.75) + 
+  stat_density2d(aes(fill = ..level.., alpha = ..level..), geom = "polygon") +
+  scale_fill_gradientn(name = "Floods", colours = flood.cols, space = "Lab") +
+  scale_alpha(range = c(0.1, 0.5)) +
+  labs(x = "Longitude", y = "Latitude", title = "Europe") +
+  theme(legend.position = "none") +
+  coord_map()
+
+europe.facet <- europe.map +
+  geom_point(aes(x = lon, y = lat, size = displaced), fill="red", shape=21, alpha=0.8) +
+  facet_wrap(~ breaks)
+
+## ASIA
+asia <- get_map("Asia", zoom =4 , maptype = "roadmap")
+
+asia.map <- ggmap(asia,  extent="panel") %+%
+  floods2 +
+  #aes(x = lon, y = lat, z = log(displaced)) +
+  aes(x = lon, y = lat) +
+  #stat_summary_2d(fun = "sum", bins = 60, alpha = 0.75) + 
+  stat_density2d(aes(fill = ..level.., alpha = ..level..), geom = "polygon") +
+  scale_fill_gradientn(name = "Floods", colours = flood.cols, space = "Lab") +
+  scale_alpha(range = c(0.1, 0.5)) +
+  labs(x = "Longitude", y = "Latitude", title = "Asia") +
+  theme(legend.position = "none") +
+  coord_map()
+
+asia.facet <- asia.map +
+  geom_point(aes(x = lon, y = lat, size = displaced), fill="red", shape=21, alpha=0.8) +
+  facet_wrap(~ breaks)
+
+## PLOT THESE 2
+grid.arrange(europe.facet, asia.facet, ncol = 2)
+
+## AFRICA
+africa <- get_map("Africa", zoom =4 , maptype = "roadmap")
+
+africa.map <- ggmap(africa,  extent="panel") %+%
+  floods2 +
+  #aes(x = lon, y = lat, z = log(displaced)) +
+  aes(x = lon, y = lat) +
+  #stat_summary_2d(fun = "sum", bins = 60, alpha = 0.75) + 
+  stat_density2d(aes(fill = ..level.., alpha = ..level..), geom = "polygon") +
+  scale_fill_gradientn(name = "Floods", colours = flood.cols, space = "Lab") +
+  scale_alpha(range = c(0.1, 0.5)) +
+  labs(x = "Longitude", y = "Latitude", title = "Africa") +
+  theme(legend.position = "none") +
+  coord_map()
+
+africa.facet <- africa.map +
+  geom_point(aes(x = lon, y = lat, size = displaced), fill="red", shape=21, alpha=0.8) +
+  facet_wrap(~ breaks)
+
+## AUSTRALIA
+australia <- get_map("Australia", zoom =4 , maptype = "roadmap")
+
+australia.map <- ggmap(australia,  extent="panel") %+%
+  floods2 +
+  #aes(x = lon, y = lat, z = log(displaced)) +
+  aes(x = lon, y = lat) +
+  #stat_summary_2d(fun = "sum", bins = 60, alpha = 0.75) + 
+  stat_density2d(aes(fill = ..level.., alpha = ..level..), geom = "polygon") +
+  scale_fill_gradientn(name = "Floods", colours = flood.cols, space = "Lab") +
+  scale_alpha(range = c(0.1, 0.5)) +
+  labs(x = "Longitude", y = "Latitude", title = "Australia") +
+  theme(legend.position = "none") +
+  coord_map()
+
+australia.facet <- australia.map +
+  geom_point(aes(x = lon, y = lat, size = displaced), fill="red", shape=21, alpha=0.8) +
+  facet_wrap(~ breaks)
+
+## PLOT THESE 2
+grid.arrange(africa.facet, australia.facet, ncol = 2)
+
+```

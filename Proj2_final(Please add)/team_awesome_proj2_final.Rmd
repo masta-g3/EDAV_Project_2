@@ -2,7 +2,8 @@
 title: "Investigation of Floods (EDAV Proj.2)"
 author: "Team - Awesome"
 date: "March 5, 2016"
-output: pdf_document
+output: html_document
+css: styles.css
 ---
 ##Project Description
 In this project, we will analysis the global floods records from 1985 to 2008. Specifically, we will invesitgate the floods patterns over time, floods distribution across continent, causes of floods and relation between floods and air pressure. 
@@ -130,7 +131,7 @@ Also, a [dynamic map](https://yusenwang.shinyapps.io/Dynamic_Flood_Map/) is avai
 
 
 ```{r, echo=FALSE, fig.width = 15, fig.height = 5}
-setwd("/Users/vernon/Dropbox/courses/Columbia/STAT_W4701_EDA_and_visualization/hw/hw2/EDAV_Project_2/Yuhao_analysis_on_M6_floods/Proj2_final")
+#setwd("/Users/vernon/Dropbox/courses/Columbia/STAT_W4701_EDA_and_visualization/hw/hw2/EDAV_Project_2/Yuhao_analysis_on_M6_floods/Proj2_final")
 file <- read.csv("GlobalFloodsRecord.csv", header = TRUE)
 file$Dead <- as.numeric(as.character(file$Dead))
 file <- na.omit(file)
@@ -261,7 +262,7 @@ library(png)
 From previous analysis, we found that heavy rain is the reason which caused the largest number of floods. Here, we researched on the floods caused by heavy rain that had a level of M6. We count the occurence of M6 level floods at each countries from 1985 to 2008. The countries with the largest 20 occurence are displayed in the following dotchart. From the plot, we can see that in the time period 1985 to 2008 China and USA have much more M6 floods than other countries. We then analysised the M6 floods in China. 
 
 ```{r, echo=FALSE, message=FALSE}
-setwd("/Users/vernon/Dropbox/courses/Columbia/STAT_W4701_EDA_and_visualization/hw/hw2/EDAV_Project_2/Yuhao_analysis_on_M6_floods/Proj2_final")
+#setwd("/Users/vernon/Dropbox/courses/Columbia/STAT_W4701_EDA_and_visualization/hw/hw2/EDAV_Project_2/Yuhao_analysis_on_M6_floods/Proj2_final")
 
 records = read.csv("record_new_yuhao.csv",na.strings = "NA")
 
